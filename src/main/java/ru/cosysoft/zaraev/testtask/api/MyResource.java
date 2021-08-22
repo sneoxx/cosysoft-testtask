@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
+
 /**
  * Интерфейс для работы с контроллером MyResourceImpl
  */

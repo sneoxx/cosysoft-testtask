@@ -7,6 +7,7 @@ import ru.cosysoft.zaraev.testtask.api.MyResource;
 import ru.cosysoft.zaraev.testtask.service.MyService;
 import java.util.Map;
 
+
 /**
  * Класс RestController для обработки веб запросов
  */
