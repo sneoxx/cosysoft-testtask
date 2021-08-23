@@ -3,6 +3,7 @@ package ru.cosysoft.zaraev.testtask.service;
 import org.json.JSONArray;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -17,8 +18,6 @@ public interface MyService {
     String getMapByState(String state);
 
     String getMapByCity(String city);
-
-    String getGeographicCenter(JSONArray jsonArrayCoordinates);
 
     Map<String, String> getMyResponse(String string);
 
