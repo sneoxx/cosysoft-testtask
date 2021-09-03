@@ -5,33 +5,33 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import ru.cosysoft.zaraev.testtask.api.MyFeignClient;
-import ru.cosysoft.zaraev.testtask.service.MyService;
+import ru.cosysoft.zaraev.testtask.api.FeignClientForOpenMap;
+import ru.cosysoft.zaraev.testtask.service.GeoRestService;
 
 import java.util.*;
 
 
 /**
- * Сервисный класс для обработки web запросов
+ * Сервисный класс для обработки запросов от контроллеров
  */
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class MyServiceImpl implements MyService {
+public class GeoRestServiceImpl implements GeoRestService {
 
-    private final MyFeignClient myFeignClient;
+    private final FeignClientForOpenMap feignClientForOpenMap;
 
     /**
-     * Обработка запроса с q параметром
+     * Обработка запроса с query параметром
      *
-     * @param q - значение q параметра
+     * @param query - значение q параметра
      * @return - ответ от сервиса OSM
      */
     @Cacheable
     @Override
-    public String getMap(String q) {
-        String responseFromService = myFeignClient.getMap(q);
-        log.debug("getMap() Запрос: {} успешно вернул ответ {}", q, responseFromService);
+    public String getMap(String query) {
+        String responseFromService = feignClientForOpenMap.getMap(query);
+        log.debug("getMap() Запрос: {} успешно вернул ответ {}", query, responseFromService);
         return responseFromService;
     }
 
@@ -44,13 +44,13 @@ public class MyServiceImpl implements MyService {
     @Cacheable
     @Override
     public String getMapByState(String state) {
-        String responseFromService = myFeignClient.getMapByState(state);
+        String responseFromService = feignClientForOpenMap.getMapByState(state);
         log.debug("getMap() Запрос: {} успешно вернул ответ {}", state, responseFromService);
         return responseFromService;
     }
 
     /**
-     * Обработка city с q параметром
+     * Обработка запроса с city параметром
      *
      * @param city - значение city параметра
      * @return - ответ от сервиса OSM
@@ -58,20 +58,20 @@ public class MyServiceImpl implements MyService {
     @Cacheable
     @Override
     public String getMapByCity(String city) {
-        String responseFromService = myFeignClient.getMapByCity(city);
+        String responseFromService = feignClientForOpenMap.getMapByCity(city);
         log.debug("getMap() Запрос: {} успешно вернул ответ {}", city, responseFromService);
         return responseFromService;
     }
 
     /**
-     * Парсинг строки в Мар-у, возвращающаю массив координат наибольшей части гео-объекта и координаты его географического центра
+     * Парсинг строки в коллекцию Мар, возвращающая массив координат наибольшей части гео-объекта и координаты его географического центра
      *
-     * @param string - исходная строка
+     * @param stringResponse - исходная строка полученная из OpenMap c данными объекта
      * @return - полученная мапа
      */
     @Override
-    public Map<String, String> getMyResponse(String string) {
-        JSONArray JsonObj = new JSONArray(string);
+    public Map<String, String> getMyResponse(String stringResponse) {
+        JSONArray JsonObj = new JSONArray(stringResponse);
         JSONArray jsonArrayCoordinates = JsonObj.getJSONObject(0).getJSONObject("geojson").getJSONArray("coordinates");
         JSONArray largestArrayOfCoordinates = getLargestArrayOfCoordinates(jsonArrayCoordinates);
         Map<String, String> myResponse = new HashMap<>();
@@ -82,7 +82,7 @@ public class MyServiceImpl implements MyService {
     }
 
     /**
-     * Метод нахождение географичесвого центра массива координат
+     * Метод нахождение географического центра массива координат
      *
      * @param jsonArrayCoordinates - массив координат
      * @return - рассчитанные координаты в виде строки
@@ -124,30 +124,31 @@ public class MyServiceImpl implements MyService {
         }
         String string1 = new String(stringBuilderCoordinates);
         String[] stringArrayCoordinates = string1.split(",");
-        log.debug("getMyResponse() JSONArray успешно скновертирован в коллекцию List<String>");
+        log.debug("getMyResponse() JSONArray успешно сконвертирован в коллекцию List<String>");
         return Arrays.asList(stringArrayCoordinates);
     }
 
     /**
-     * Найти площадь коллекции List с координатами
+     * Найти площадь коллекции List координат
      *
-     * @param stringList - коллекция List<String> с координатами
-     * @return - площадь
+     * @param stringListCoordinates - коллекция List<String> с координатами
+     * @return - найденная площадь типа double
      */
-    private double getCoordinateListArea(List<String> stringList) {
-        List<String> stringListCoordinates1X = new ArrayList<>();
-        List<String> stringListCoordinates1Y = new ArrayList<>();
-        for (int i = 0; i < stringList.size(); i++) {
+    private double getCoordinateListArea(List<String> stringListCoordinates) {
+        List<String> stringListCoordinatesX = new ArrayList<>();
+        List<String> stringListCoordinatesY = new ArrayList<>();
+        for (int i = 0; i < stringListCoordinates.size(); i++) {
             if (i % 2 == 0) {
-                stringListCoordinates1X.add(stringList.get(i));
+                stringListCoordinatesX.add(stringListCoordinates.get(i));
             } else {
-                stringListCoordinates1Y.add(stringList.get(i));
+                stringListCoordinatesY.add(stringListCoordinates.get(i));
             }
         }
         double sum = 0;
-        int numberOfVertices = stringListCoordinates1X.size();
+        int numberOfVertices = stringListCoordinatesX.size();
         for (int i = 0; i < numberOfVertices - 1; i++) {
-            sum = sum + Double.parseDouble(stringListCoordinates1X.get(i)) * Double.parseDouble(stringListCoordinates1Y.get(i + 1)) % numberOfVertices - Double.parseDouble(stringListCoordinates1Y.get(i)) * Double.parseDouble(stringListCoordinates1X.get(i + 1)) % numberOfVertices;
+            sum = sum + Double.parseDouble(stringListCoordinatesX.get(i)) * Double.parseDouble(stringListCoordinatesY.get(i + 1))
+                    % numberOfVertices - Double.parseDouble(stringListCoordinatesY.get(i)) * Double.parseDouble(stringListCoordinatesX.get(i + 1)) % numberOfVertices;
         }
         sum = Math.abs(sum / 2);
         log.debug("getCoordinateListArea() Найдена площадь коллекции List: {}", sum);

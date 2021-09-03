@@ -1,19 +1,17 @@
 package ru.cosysoft.zaraev.testtask.service;
 
-import org.json.JSONArray;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 
 /**
- * Интерейс Сервиса для обработки web запросов
+ * Интерфейс сервиса GeoRestService для обработки запросов от контроллеров
  */
 @Service
-public interface MyService {
+public interface GeoRestService {
 
-    String getMap(String q);
+    String getMap(String query);
 
     String getMapByState(String state);
 

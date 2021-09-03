@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  *
  */
 @FeignClient(name = "OpenMap", url = "https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1")
-public interface MyFeignClient {
+public interface FeignClientForOpenMap {
 
     @GetMapping(value = "/{q}")
     String getMap(@RequestParam String q);

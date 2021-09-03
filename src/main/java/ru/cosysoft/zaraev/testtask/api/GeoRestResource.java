@@ -10,10 +10,10 @@ import java.util.Map;
 /**
  * Интерфейс для работы с контроллером MyResourceImpl
  */
-public interface MyResource {
+public interface GeoRestResource {
 
-    @RequestMapping(value = "/", method = RequestMethod.GET, params = "q")
-    Map<String, String> getMap(@RequestParam String q);
+    @RequestMapping(value = "/", method = RequestMethod.GET, params = "query")
+    Map<String, String> getMap(@RequestParam String query);
 
     @RequestMapping(value = "/", method = RequestMethod.GET, params = "state")
     Map<String, String> getMapByState(@RequestParam String state);
